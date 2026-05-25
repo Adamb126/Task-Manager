@@ -13,6 +13,7 @@ export interface Task {
   recurrence: Recurrence;
   estimatedHours?: number;
   actualHours?: number;
+  startTime?: string;    // HH:MM, optional — used for calendar placement
 }
 
 export type View = 'tasks' | 'calendar' | 'archive';

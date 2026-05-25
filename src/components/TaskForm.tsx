@@ -22,20 +22,24 @@ const RECURRENCES: { value: Recurrence; label: string }[] = [
 
 export function TaskForm({ initial, onSave, onClose }: Props) {
   const today = new Date().toISOString().slice(0, 10);
-  const [name, setName]           = useState(initial?.name ?? '');
-  const [priority, setPriority]   = useState<Priority>(initial?.priority ?? 'medium');
-  const [deadline, setDeadline]   = useState(initial?.deadline ?? today);
-  const [notes, setNotes]         = useState(initial?.notes ?? '');
+  const [name, setName]         = useState(initial?.name ?? '');
+  const [priority, setPriority] = useState<Priority>(initial?.priority ?? 'medium');
+  const [deadline, setDeadline] = useState(initial?.deadline ?? today);
+  const [notes, setNotes]       = useState(initial?.notes ?? '');
   const [recurrence, setRecurrence] = useState<Recurrence>(initial?.recurrence ?? 'none');
   const [estHoursStr, setEstHoursStr] = useState(
     initial?.estimatedHours !== undefined ? String(initial.estimatedHours) : ''
   );
+  const [startTime, setStartTime] = useState(initial?.startTime ?? '');
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !deadline) return;
     const estimatedHours = estHoursStr !== '' ? parseFloat(estHoursStr) : undefined;
-    onSave({ name: name.trim(), priority, deadline, notes, recurrence, estimatedHours });
+    onSave({
+      name: name.trim(), priority, deadline, notes, recurrence, estimatedHours,
+      startTime: startTime || undefined,
+    });
     onClose();
   }
 
@@ -64,14 +68,6 @@ export function TaskForm({ initial, onSave, onClose }: Props) {
           </label>
           <div className="form-row">
             <label>
-              Priority
-              <select value={priority} onChange={e => setPriority(e.target.value as Priority)}>
-                {PRIORITIES.map(p => (
-                  <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
-                ))}
-              </select>
-            </label>
-            <label>
               Deadline *
               <input
                 type="date"
@@ -80,8 +76,24 @@ export function TaskForm({ initial, onSave, onClose }: Props) {
                 required
               />
             </label>
+            <label>
+              Start Time
+              <input
+                type="time"
+                value={startTime}
+                onChange={e => setStartTime(e.target.value)}
+              />
+            </label>
           </div>
           <div className="form-row">
+            <label>
+              Priority
+              <select value={priority} onChange={e => setPriority(e.target.value as Priority)}>
+                {PRIORITIES.map(p => (
+                  <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                ))}
+              </select>
+            </label>
             <label>
               Est. Hours
               <input
@@ -94,15 +106,15 @@ export function TaskForm({ initial, onSave, onClose }: Props) {
                 placeholder="e.g. 2.5"
               />
             </label>
-            <label>
-              Recurrence
-              <select value={recurrence} onChange={e => setRecurrence(e.target.value as Recurrence)}>
-                {RECURRENCES.map(r => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
-                ))}
-              </select>
-            </label>
           </div>
+          <label>
+            Recurrence
+            <select value={recurrence} onChange={e => setRecurrence(e.target.value as Recurrence)}>
+              {RECURRENCES.map(r => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </label>
           <label>
             Notes
             <textarea
