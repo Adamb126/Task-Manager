@@ -1,14 +1,19 @@
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
+export type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly';
 
 export interface Task {
   id: string;
   name: string;
   priority: Priority;
-  createdAt: string;   // ISO date string
-  deadline: string;    // ISO date string (YYYY-MM-DD)
+  createdAt: string;
+  deadline: string;      // YYYY-MM-DD
   notes: string;
   completed: boolean;
   completedAt?: string;
+  recurrence: Recurrence;
+  estimatedHours?: number;
+  actualHours?: number;
+  startTime?: string;    // HH:MM, optional — used for calendar placement
 }
 
 export type View = 'tasks' | 'calendar' | 'archive';

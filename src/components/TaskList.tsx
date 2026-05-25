@@ -2,30 +2,33 @@ import { useState } from 'react';
 import type { Task } from '../types';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
+import { CompleteModal } from './CompleteModal';
 import { Plus, Search } from 'lucide-react';
 
 interface Props {
   tasks: Task[];
   onAdd: (data: Omit<Task, 'id' | 'createdAt' | 'completed'>) => void;
-  onComplete: (id: string) => void;
+  onComplete: (id: string, actualHours?: number) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
 }
 
 const SORT_OPTIONS = [
-  { value: 'deadline', label: 'Deadline' },
-  { value: 'priority', label: 'Priority' },
-  { value: 'created', label: 'Created' },
-  { value: 'name', label: 'Name' },
+  { value: 'deadline',  label: 'Deadline' },
+  { value: 'priority',  label: 'Priority' },
+  { value: 'created',   label: 'Created' },
+  { value: 'name',      label: 'Name' },
+  { value: 'hours',     label: 'Est. Hours' },
 ];
 
 const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 };
 
 export function TaskList({ tasks, onAdd, onComplete, onUpdate, onDelete }: Props) {
-  const [showForm, setShowForm] = useState(false);
-  const [editTask, setEditTask] = useState<Task | null>(null);
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState('deadline');
+  const [showForm, setShowForm]       = useState(false);
+  const [editTask, setEditTask]       = useState<Task | null>(null);
+  const [completingTask, setCompletingTask] = useState<Task | null>(null);
+  const [search, setSearch]           = useState('');
+  const [sort, setSort]               = useState('deadline');
   const [filterPriority, setFilterPriority] = useState('all');
 
   const filtered = tasks
@@ -36,16 +39,24 @@ export function TaskList({ tasks, onAdd, onComplete, onUpdate, onDelete }: Props
       return matchSearch && matchPriority;
     })
     .sort((a, b) => {
-      if (sort === 'deadline') return a.deadline.localeCompare(b.deadline);
-      if (sort === 'priority') return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-      if (sort === 'created') return b.createdAt.localeCompare(a.createdAt);
+      if (sort === 'deadline')  return a.deadline.localeCompare(b.deadline);
+      if (sort === 'priority')  return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+      if (sort === 'created')   return b.createdAt.localeCompare(a.createdAt);
+      if (sort === 'hours')     return (b.estimatedHours ?? 0) - (a.estimatedHours ?? 0);
       return a.name.localeCompare(b.name);
     });
+
+  const totalEstimatedHours = tasks.reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
 
   return (
     <div className="task-list-view">
       <div className="view-header">
-        <span className="view-title">Active Tasks — {tasks.length} items</span>
+        <div>
+          <span className="view-title">Active Tasks — {tasks.length} items</span>
+          {totalEstimatedHours > 0 && (
+            <span className="hours-summary">{totalEstimatedHours.toFixed(1)}h estimated total</span>
+          )}
+        </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>
           <Plus size={13} /> New Task
         </button>
@@ -84,7 +95,7 @@ export function TaskList({ tasks, onAdd, onComplete, onUpdate, onDelete }: Props
             <TaskCard
               key={task.id}
               task={task}
-              onComplete={() => onComplete(task.id)}
+              onComplete={() => setCompletingTask(task)}
               onEdit={() => setEditTask(task)}
               onDelete={() => onDelete(task.id)}
             />
@@ -103,6 +114,16 @@ export function TaskList({ tasks, onAdd, onComplete, onUpdate, onDelete }: Props
           initial={editTask}
           onSave={data => onUpdate(editTask.id, data)}
           onClose={() => setEditTask(null)}
+        />
+      )}
+      {completingTask && (
+        <CompleteModal
+          task={completingTask}
+          onConfirm={hours => {
+            onComplete(completingTask.id, hours);
+            setCompletingTask(null);
+          }}
+          onClose={() => setCompletingTask(null)}
         />
       )}
     </div>
