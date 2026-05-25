@@ -45,12 +45,9 @@ export function TaskList({ tasks, onAdd, onComplete, onUpdate, onDelete }: Props
   return (
     <div className="task-list-view">
       <div className="view-header">
-        <div>
-          <h1>Tasks</h1>
-          <span className="task-count">{tasks.length} active</span>
-        </div>
+        <span className="view-title">Active Tasks — {tasks.length} items</span>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          <Plus size={18} /> New Task
+          <Plus size={13} /> New Task
         </button>
       </div>
 

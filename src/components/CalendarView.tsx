@@ -11,10 +11,10 @@ interface Props {
 }
 
 const PRIORITY_DOT = {
-  low:    '#6b7280',
-  medium: '#3b82f6',
-  high:   '#f59e0b',
-  urgent: '#ef4444',
+  low:    '#444',
+  medium: '#2979ff',
+  high:   '#ffb300',
+  urgent: '#ff3d3d',
 };
 
 export function CalendarView({ tasks }: Props) {
@@ -43,7 +43,7 @@ export function CalendarView({ tasks }: Props) {
   return (
     <div className="calendar-view">
       <div className="view-header">
-        <h1>Calendar</h1>
+        <span className="view-title">Calendar View</span>
         <div className="cal-nav">
           <button className="icon-btn" onClick={() => setCurrent(subMonths(current, 1))}>
             <ChevronLeft size={20} />

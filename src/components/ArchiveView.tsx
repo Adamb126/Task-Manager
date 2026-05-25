@@ -22,10 +22,7 @@ export function ArchiveView({ tasks, onRestore, onDelete }: Props) {
   return (
     <div className="task-list-view">
       <div className="view-header">
-        <div>
-          <h1>Archive</h1>
-          <span className="task-count">{tasks.length} completed</span>
-        </div>
+        <span className="view-title">Archive — {tasks.length} completed</span>
       </div>
 
       <div className="filters-bar">
