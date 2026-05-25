@@ -1,5 +1,5 @@
 import type { Task } from '../types';
-import { CheckCircle, Clock, Edit2, Trash2, RotateCcw, AlertCircle, AlertTriangle, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle, Clock, Edit2, Trash2, RotateCcw, AlertCircle, AlertTriangle, Minus, ChevronDown, ChevronUp, RefreshCw, CalendarDays } from 'lucide-react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { useState } from 'react';
 
@@ -18,13 +18,22 @@ const PRIORITY_CONFIG = {
   urgent: { icon: AlertCircle,   color: 'priority-urgent', label: 'Urgent' },
 };
 
+const RECURRENCE_LABEL: Record<string, string> = {
+  daily:    'Daily',
+  weekly:   'Weekly',
+  biweekly: 'Every 2 wks',
+  monthly:  'Monthly',
+  yearly:   'Yearly',
+};
+
 export function TaskCard({ task, onComplete, onRestore, onEdit, onDelete }: Props) {
   const [expanded, setExpanded] = useState(false);
   const cfg = PRIORITY_CONFIG[task.priority];
   const PriorityIcon = cfg.icon;
   const deadline = parseISO(task.deadline);
-  const overdue = !task.completed && isPast(deadline) && !isToday(deadline);
+  const overdue  = !task.completed && isPast(deadline) && !isToday(deadline);
   const dueToday = !task.completed && isToday(deadline);
+  const isRecurring = task.recurrence && task.recurrence !== 'none';
 
   return (
     <div className={`task-card ${task.completed ? 'completed' : ''} ${overdue ? 'overdue' : ''} ${dueToday ? 'due-today' : ''}`}>
@@ -41,7 +50,15 @@ export function TaskCard({ task, onComplete, onRestore, onEdit, onDelete }: Prop
             </button>
           )}
           <div className="task-info">
-            <span className="task-name">{task.name}</span>
+            <div className="task-name-row">
+              <span className="task-name">{task.name}</span>
+              {isRecurring && (
+                <span className="recurrence-badge" title={`Repeats ${RECURRENCE_LABEL[task.recurrence]}`}>
+                  <RefreshCw size={10} />
+                  {RECURRENCE_LABEL[task.recurrence]}
+                </span>
+              )}
+            </div>
             <div className="task-meta">
               <span className={`priority-badge ${cfg.color}`}>
                 <PriorityIcon size={12} />
@@ -51,6 +68,10 @@ export function TaskCard({ task, onComplete, onRestore, onEdit, onDelete }: Prop
                 <Clock size={12} />
                 {overdue ? 'Overdue · ' : dueToday ? 'Due today · ' : ''}
                 {format(deadline, 'MMM d, yyyy')}
+              </span>
+              <span className="created-badge">
+                <CalendarDays size={11} />
+                Created {format(parseISO(task.createdAt), 'MMM d, yyyy')}
               </span>
               {task.completed && task.completedAt && (
                 <span className="completed-badge">
