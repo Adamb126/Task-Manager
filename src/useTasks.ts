@@ -9,7 +9,6 @@ function loadTasks(): Task[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const tasks: Task[] = JSON.parse(raw);
-    // backfill recurrence for tasks created before this field existed
     return tasks.map(t => ({ ...t, recurrence: t.recurrence ?? 'none' }));
   } catch {
     return [];
@@ -49,16 +48,17 @@ export function useTasks() {
     setTasks(prev => prev.map(t => (t.id === id ? { ...t, ...updates } : t)));
   }
 
-  function completeTask(id: string) {
+  function completeTask(id: string, actualHours?: number) {
     setTasks(prev => {
       const task = prev.find(t => t.id === id);
       if (!task) return prev;
 
       const completed = prev.map(t =>
-        t.id === id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
+        t.id === id
+          ? { ...t, completed: true, completedAt: new Date().toISOString(), actualHours }
+          : t
       );
 
-      // For recurring tasks, auto-create the next instance
       if (task.recurrence !== 'none') {
         const next: Task = {
           ...task,
@@ -67,6 +67,7 @@ export function useTasks() {
           deadline: nextDeadline(task.deadline, task.recurrence),
           completed: false,
           completedAt: undefined,
+          actualHours: undefined,
         };
         return [next, ...completed];
       }
@@ -81,11 +82,11 @@ export function useTasks() {
 
   function restoreTask(id: string) {
     setTasks(prev =>
-      prev.map(t => (t.id === id ? { ...t, completed: false, completedAt: undefined } : t))
+      prev.map(t => (t.id === id ? { ...t, completed: false, completedAt: undefined, actualHours: undefined } : t))
     );
   }
 
-  const active = tasks.filter(t => !t.completed);
+  const active   = tasks.filter(t => !t.completed);
   const archived = tasks.filter(t => t.completed);
 
   return { tasks, active, archived, addTask, updateTask, completeTask, deleteTask, restoreTask };

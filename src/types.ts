@@ -5,12 +5,14 @@ export interface Task {
   id: string;
   name: string;
   priority: Priority;
-  createdAt: string;   // ISO date string
-  deadline: string;    // YYYY-MM-DD
+  createdAt: string;
+  deadline: string;      // YYYY-MM-DD
   notes: string;
   completed: boolean;
   completedAt?: string;
   recurrence: Recurrence;
+  estimatedHours?: number;
+  actualHours?: number;
 }
 
 export type View = 'tasks' | 'calendar' | 'archive';

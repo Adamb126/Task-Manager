@@ -12,12 +12,12 @@ interface Props {
 const PRIORITIES: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
 const RECURRENCES: { value: Recurrence; label: string }[] = [
-  { value: 'none',      label: 'No recurrence' },
-  { value: 'daily',     label: 'Daily' },
-  { value: 'weekly',    label: 'Weekly' },
-  { value: 'biweekly',  label: 'Every 2 weeks' },
-  { value: 'monthly',   label: 'Monthly' },
-  { value: 'yearly',    label: 'Yearly' },
+  { value: 'none',     label: 'No recurrence' },
+  { value: 'daily',    label: 'Daily' },
+  { value: 'weekly',   label: 'Weekly' },
+  { value: 'biweekly', label: 'Every 2 weeks' },
+  { value: 'monthly',  label: 'Monthly' },
+  { value: 'yearly',   label: 'Yearly' },
 ];
 
 export function TaskForm({ initial, onSave, onClose }: Props) {
@@ -27,11 +27,15 @@ export function TaskForm({ initial, onSave, onClose }: Props) {
   const [deadline, setDeadline]   = useState(initial?.deadline ?? today);
   const [notes, setNotes]         = useState(initial?.notes ?? '');
   const [recurrence, setRecurrence] = useState<Recurrence>(initial?.recurrence ?? 'none');
+  const [estHoursStr, setEstHoursStr] = useState(
+    initial?.estimatedHours !== undefined ? String(initial.estimatedHours) : ''
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !deadline) return;
-    onSave({ name: name.trim(), priority, deadline, notes, recurrence });
+    const estimatedHours = estHoursStr !== '' ? parseFloat(estHoursStr) : undefined;
+    onSave({ name: name.trim(), priority, deadline, notes, recurrence, estimatedHours });
     onClose();
   }
 
@@ -77,14 +81,28 @@ export function TaskForm({ initial, onSave, onClose }: Props) {
               />
             </label>
           </div>
-          <label>
-            Recurrence
-            <select value={recurrence} onChange={e => setRecurrence(e.target.value as Recurrence)}>
-              {RECURRENCES.map(r => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </label>
+          <div className="form-row">
+            <label>
+              Est. Hours
+              <input
+                type="number"
+                min="0.5"
+                max="999"
+                step="0.5"
+                value={estHoursStr}
+                onChange={e => setEstHoursStr(e.target.value)}
+                placeholder="e.g. 2.5"
+              />
+            </label>
+            <label>
+              Recurrence
+              <select value={recurrence} onChange={e => setRecurrence(e.target.value as Recurrence)}>
+                {RECURRENCES.map(r => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
           <label>
             Notes
             <textarea

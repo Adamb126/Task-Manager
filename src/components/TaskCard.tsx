@@ -1,5 +1,5 @@
 import type { Task } from '../types';
-import { CheckCircle, Clock, Edit2, Trash2, RotateCcw, AlertCircle, AlertTriangle, Minus, ChevronDown, ChevronUp, RefreshCw, CalendarDays } from 'lucide-react';
+import { CheckCircle, Clock, Edit2, Trash2, RotateCcw, AlertCircle, AlertTriangle, Minus, ChevronDown, ChevronUp, RefreshCw, CalendarDays, Timer } from 'lucide-react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { useState } from 'react';
 
@@ -30,10 +30,11 @@ export function TaskCard({ task, onComplete, onRestore, onEdit, onDelete }: Prop
   const [expanded, setExpanded] = useState(false);
   const cfg = PRIORITY_CONFIG[task.priority];
   const PriorityIcon = cfg.icon;
-  const deadline = parseISO(task.deadline);
-  const overdue  = !task.completed && isPast(deadline) && !isToday(deadline);
-  const dueToday = !task.completed && isToday(deadline);
+  const deadline   = parseISO(task.deadline);
+  const overdue    = !task.completed && isPast(deadline) && !isToday(deadline);
+  const dueToday   = !task.completed && isToday(deadline);
   const isRecurring = task.recurrence && task.recurrence !== 'none';
+  const hasNotes   = Boolean(task.notes);
 
   return (
     <div className={`task-card ${task.completed ? 'completed' : ''} ${overdue ? 'overdue' : ''} ${dueToday ? 'due-today' : ''}`}>
@@ -69,6 +70,27 @@ export function TaskCard({ task, onComplete, onRestore, onEdit, onDelete }: Prop
                 {overdue ? 'Overdue · ' : dueToday ? 'Due today · ' : ''}
                 {format(deadline, 'MMM d, yyyy')}
               </span>
+              {task.estimatedHours !== undefined && (
+                <span className="hours-badge">
+                  <Timer size={11} />
+                  Est: {task.estimatedHours}h
+                  {task.actualHours !== undefined && (
+                    <>
+                      {' · '}Actual: {task.actualHours}h
+                      {task.actualHours <= task.estimatedHours
+                        ? <span className="hours-under"> ▼{(task.estimatedHours - task.actualHours).toFixed(1)}h</span>
+                        : <span className="hours-over"> ▲{(task.actualHours - task.estimatedHours).toFixed(1)}h</span>
+                      }
+                    </>
+                  )}
+                </span>
+              )}
+              {task.actualHours !== undefined && task.estimatedHours === undefined && (
+                <span className="hours-badge">
+                  <Timer size={11} />
+                  Took: {task.actualHours}h
+                </span>
+              )}
               <span className="created-badge">
                 <CalendarDays size={11} />
                 Created {format(parseISO(task.createdAt), 'MMM d, yyyy')}
@@ -82,7 +104,7 @@ export function TaskCard({ task, onComplete, onRestore, onEdit, onDelete }: Prop
           </div>
         </div>
         <div className="task-card-actions">
-          {task.notes && (
+          {hasNotes && (
             <button className="icon-btn" onClick={() => setExpanded(e => !e)} title="Toggle notes">
               {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
